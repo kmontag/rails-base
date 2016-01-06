@@ -1,0 +1,11 @@
+# Ignore installed gems.
+/vendor/bundle
+
+# Ignore all logfiles and tempfiles.
+/log/*
+!/log/.keep
+/tmp/*
+!/tmp/.keep
+
+# Don't fix gems exactly.
+/Gemfile.lock

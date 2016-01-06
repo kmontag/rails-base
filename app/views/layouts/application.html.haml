@@ -1,0 +1,10 @@
+!!!
+%html
+  %head
+    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+    %title Title needed
+    = stylesheet_link_tag    'application', media: 'all'
+    = csrf_meta_tags
+  = assets({}, tag_name: :body) do
+    = yield
+    = javascript_include_tag 'application'

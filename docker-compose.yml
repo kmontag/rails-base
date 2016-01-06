@@ -1,0 +1,24 @@
+app:
+  build: docker/app
+  ports: 
+    - 3000:3000
+  links:
+    - db
+  volumes:
+    - .:/app
+  environment:
+    DATABASE_USER: user
+    DATABASE_PASSWORD: password
+    DATABASE_HOST: db
+
+db:
+  image: postgres:9.4
+  volumes_from:
+    - dbdata
+  environment:
+    POSTGRES_USER: user
+    POSTGRES_PASSWORD: password
+
+dbdata:
+  image: postgres:9.4
+  entrypoint: "true"
