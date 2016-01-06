@@ -68,7 +68,7 @@ ps:
 	docker-compose ps
 
 # Physical files and directories
-vendor/bundle: tmp/docker-build Gemfile Gemfile.lock docker/app/Dockerfile
+vendor/bundle: tmp/docker-build docker/app/Dockerfile $(wildcard Gemfile*)
 	$(MAKE) bundle
 
 tmp/docker-build: docker-compose.yml $(wildcard docker/app/*)
