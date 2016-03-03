@@ -7,5 +7,5 @@
 /tmp/*
 !/tmp/.keep
 
-# Don't fix gems exactly.
+# Don't fix gems exactly. Remove this for an actual application.
 /Gemfile.lock

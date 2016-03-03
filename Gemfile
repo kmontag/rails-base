@@ -74,8 +74,7 @@ group :test do
   # Factories
   gem 'factory_girl'
 
-  # Allow context/should blocks in tests
-  gem 'shoulda-context'
+  gem 'minitest-rails'
 
   # Run individual tests using rake matchers
   gem 'single_test'
