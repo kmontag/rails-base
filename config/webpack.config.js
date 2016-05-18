@@ -14,7 +14,7 @@ var production = process.env.TARGET === 'production';
 var config = {
   entry: {
     // Sources are expected to live in $app_root/webpack
-    'application': './webpack/application.js'
+    'application': './webpack/application'
   },
 
   output: {
@@ -29,6 +29,11 @@ var config = {
   },
 
   resolve: {
+    root: path.join(__dirname, '..', 'webpack'),
+    extensions: ['', '.js', '.coffee']
+  },
+
+  resolveLoader: {
     root: path.join(__dirname, '..', 'webpack')
   },
 
@@ -41,7 +46,20 @@ var config = {
       chunks: false,
       modules: false,
       assets: true
-    })]
+    })
+  ],
+
+  module: {
+    loaders: [
+      { test: /\.coffee$/, loader: 'coffee-loader' },
+      { test: /\.(coffee\.md|litcoffee)$/, loader: 'coffee-loader?literate' }
+    ]
+  },
+
+  watchOptions: {
+    aggregateTimeout: 300,
+    poll: 300
+  },
 };
 
 if (production) {

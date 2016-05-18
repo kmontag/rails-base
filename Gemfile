@@ -1,29 +1,13 @@
 # Bower packages
 source 'https://rails-assets.org' do
-  # Promise library
-  gem 'rails-assets-bluebird'
-
-  # Style framework
+  # Frontend framework
   gem 'rails-assets-bootstrap'
-
-  # Rails JS helpers
-  gem 'rails-assets-jquery-ujs'
-
-  # JS initialization framework
-  gem 'rails-assets-regulator'
-
-  # Utilities
-  gem 'rails-assets-underscore'
-  gem 'rails-assets-underscore.string'
 end
 
 source 'https://rubygems.org'
 
 # Use ActiveModel has_secure_password
 gem 'bcrypt', '~> 3.1.7'
-
-# Use CoffeeScript for .coffee assets and views
-gem 'coffee-rails', '~> 4.1.0'
 
 # Authentication
 gem 'devise'
@@ -42,7 +26,7 @@ gem 'pg'
 gem 'rails', '4.2.0'
 
 # Use SCSS for stylesheets
-gem 'sass-rails', '~> 5.0'
+gem 'sassc-rails'
 
 # Use Uglifier as compressor for JavaScript assets
 gem 'uglifier', '>= 1.3.0'

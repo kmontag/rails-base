@@ -11,7 +11,8 @@ stop:      ## Shut down the app
 #! Common tasks:
 test:      ## Run tests
 console:   ## Launch a Rails console
-sh:        ## Run Bash
+sh:        ## Run Bash in the app container
+sh-js:     ## Run Bash in the JS container
 bundle:    ## Install gems
 
 #!
@@ -51,7 +52,7 @@ debug: stop deps
 
 .PHONY: stop
 stop:
-	docker-compose stop app db
+	docker-compose stop app db js
 
 .PHONY: console
 console: deps
@@ -64,6 +65,10 @@ test: deps
 .PHONY: sh
 sh: tmp/docker-build
 	docker-compose run --rm app /bin/bash
+
+.PHONY: sh-js
+sh-js: tmp/docker-build
+	docker-compose run --rm js /bin/bash
 
 .PHONY: logs
 logs:

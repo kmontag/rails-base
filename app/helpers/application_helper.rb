@@ -1,5 +1,5 @@
 module ApplicationHelper
-  def assets(html_options = {}, options = {}, &block)
+  def view(html_options = {}, options = {}, &block)
     partial_name = @virtual_path
 
     # Pass these directly to the content_tag helper
