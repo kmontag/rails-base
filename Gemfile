@@ -56,6 +56,8 @@ gem 'uglifier', '>= 1.3.0'
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
 
+gem 'webpack-rails'
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug'
@@ -79,4 +81,3 @@ group :test do
   # Run individual tests using rake matchers
   gem 'single_test'
 end
-

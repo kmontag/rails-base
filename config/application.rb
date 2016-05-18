@@ -22,5 +22,8 @@ module App
 
     # Do not swallow errors in after_commit/after_rollback callbacks.
     config.active_record.raise_in_transactional_callbacks = true
+
+    config.webpack.dev_server.host = URI(ENV['WEBPACK_DEV_SERVER_HOST']).host
+    config.webpack.dev_server.port = ENV['WEBPACK_DEV_SERVER_PORT']
   end
 end

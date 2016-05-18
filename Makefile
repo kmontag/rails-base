@@ -4,7 +4,7 @@ default: help
 #!
 #! Launching the application:
 up:        ## Launch the app with debug access
-bg:        ## Launch the app in the background
+debug:     ## Launch the app in the background
 stop:      ## Shut down the app
 
 #!
@@ -27,21 +27,27 @@ help:      ## Show this message
 
 # Meta-dependency for everything we need prior to running the app
 .PHONY: deps
-deps: tmp/docker-build vendor/bundle
+deps: tmp/docker-build vendor/bundle node_modules
 
 .PHONY: bundle
 bundle: tmp/docker-build
 	docker-compose run --no-deps --rm app bundle install
 	docker-compose run --no-deps --rm app bundle clean
-	touch vendor/bundle
+	touch vendor/bundle/
+
+.PHONY: npm
+npm: tmp/docker-build
+	docker-compose run --no-deps --rm js npm install
+	touch node_modules/
 
 .PHONY: up
 up: stop deps
-	docker-compose up --no-recreate app
+	docker-compose up -d app js
 
-.PHONY: bg
-bg: stop deps
-	docker-compose up --no-recreate -d app
+.PHONY: debug
+debug: stop deps
+	docker-compose up -d js
+	docker-compose up app
 
 .PHONY: stop
 stop:
@@ -71,6 +77,9 @@ ps:
 vendor/bundle: tmp/docker-build docker/app/Dockerfile $(wildcard Gemfile*)
 	$(MAKE) bundle
 
-tmp/docker-build: docker-compose.yml $(wildcard docker/app/*)
-	docker-compose build app db
+node_modules: tmp/docker-build docker/js/Dockerfile package.json
+	$(MAKE) npm
+
+tmp/docker-build: docker-compose.yml $(wildcard docker/*/*)
+	docker-compose build app db js
 	touch tmp/docker-build

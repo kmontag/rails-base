@@ -4,12 +4,23 @@ app:
     - 3000:3000
   links:
     - db
+    - js
   volumes:
     - .:/app
   environment:
     DATABASE_USER: user
     DATABASE_PASSWORD: password
     DATABASE_HOST: db
+    # TODO: this goes in as tcp://host:port, extract the actual host in an entrypoint
+    WEBPACK_DEV_SERVER_HOST: ${DOCKER_HOST}
+    WEBPACK_DEV_SERVER_PORT: 3808
+
+js:
+  build: docker/js
+  volumes:
+    - .:/app
+  ports:
+    - 3808:3808
 
 db:
   image: postgres:9.4

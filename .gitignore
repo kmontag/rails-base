@@ -8,4 +8,6 @@
 !/tmp/.keep
 
 # Don't fix gems exactly. Remove this for an actual application.
-/Gemfile.lock
+/Gemfile.lock# Added by webpack-rails
+/node_modules
+/public/webpack
