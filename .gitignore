@@ -7,7 +7,15 @@
 /tmp/*
 !/tmp/.keep
 
-# Don't fix gems exactly. Remove this for an actual application.
-/Gemfile.lock# Added by webpack-rails
+# Webpack artifacts
 /node_modules
 /public/webpack
+
+# Terraform config
+/terraform/terraform.tfvars
+/terraform/.terraform
+
+# In general, remove these rules for an actual application
+/Gemfile.lock
+/terraform/terraform.tfstate
+/terraform/terraform.tfstate.backup

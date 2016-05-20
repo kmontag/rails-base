@@ -24,12 +24,6 @@ js:
 
 db:
   image: postgres:9.4
-  volumes_from:
-    - dbdata
   environment:
     POSTGRES_USER: user
     POSTGRES_PASSWORD: password
-
-dbdata:
-  image: postgres:9.4
-  entrypoint: "true"
