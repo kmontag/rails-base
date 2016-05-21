@@ -29,10 +29,13 @@ gem 'pg'
 gem 'puma'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '4.2.0'
+gem 'rails', '4.2.6'
 
 # Use SCSS for stylesheets
 gem 'sassc-rails'
+
+# Runtime for execjs
+gem 'therubyracer'
 
 # Use Uglifier as compressor for JavaScript assets
 gem 'uglifier', '>= 1.3.0'
