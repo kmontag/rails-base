@@ -16,6 +16,5 @@
 /terraform/.terraform
 
 # In general, remove these rules for an actual application
-/Gemfile.lock
 /terraform/terraform.tfstate
 /terraform/terraform.tfstate.backup
