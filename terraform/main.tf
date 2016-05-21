@@ -59,7 +59,7 @@ module "db" {
   vpc_id     = "${module.vpc.vpc_id}"
   vpc_cidr   = "${module.vpc.vpc_cidr}"
 
-  name       = "${var.name}_production"
+  name       = "production"
   username   = "${var.name}"
   password   = "${var.db_password}"
 
@@ -76,7 +76,7 @@ module "application" {
 
   deploy_group_name = "${module.users.deploy_group_name}"
   db_username       = "${module.db.username}"
-  db_host           = "${module.db.host}"
+  db_host           = "${element(split(":", module.db.host), 0)}" # Remove the port number
   db_password       = "${module.db.password}"
   application_name  = "${var.name}"
 }

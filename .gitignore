@@ -1,5 +1,8 @@
-# Ignore installed gems.
+# Installed gems.
 /vendor/bundle
+
+# Compiled assets.
+/public/assets
 
 # Ignore all logfiles and tempfiles.
 /log/*
