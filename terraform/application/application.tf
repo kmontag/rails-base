@@ -45,11 +45,11 @@ resource "aws_security_group" "application" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Web access on the Rails server port from within the network
+  # Web access from within the network
   ingress {
     protocol    = "tcp"
-    from_port   = 9292
-    to_port     = 9292
+    from_port   = 80
+    to_port     = 80
     cidr_blocks = ["${var.vpc_cidr}"]
   }
 
@@ -158,6 +158,16 @@ resource "aws_security_group" "elb" {
     to_port     = 80
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  # HTTP to the instances
+  egress {
+    protocol    = "tcp"
+    from_port   = 80
+    to_port     = 80
+    cidr_blocks = [
+      "${aws_instance.application.private_ip}/32"
+    ]
+  }
 }
 
 resource "aws_elb" "default" {
@@ -166,7 +176,7 @@ resource "aws_elb" "default" {
   instances       = ["${aws_instance.application.id}"]
 
   listener {
-    instance_port     = 9292
+    instance_port     = 80
     instance_protocol = "http"
     lb_port           = 80
     lb_protocol       = "http"
@@ -176,8 +186,8 @@ resource "aws_elb" "default" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
     timeout             = 3
-    target              = "HTTP:3000/"
-    interval            = 60
+    target              = "HTTP:80/"
+    interval            = 30
   }
 }
 

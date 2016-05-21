@@ -5,6 +5,7 @@ echo "APPLICATION SETUP"
 echo
 
 echo "Installing security updates..."
+apt-get update
 unattended-upgrade # Install security updates
 
 echo "Installing AWS CLI"
@@ -47,8 +48,17 @@ sudo -u ${username} -H sh -c "~/.rvm/bin/rvm default do gem install bundler"
 
 echo "Installing other dependencies..."
 
-# For postgres
+# nginx
+apt-get install -y nginx
+rm /etc/nginx/sites-enabled/default
+service nginx restart
+
+# Postgres
 apt-get install -y postgresql-client libpq-dev
+
+# Node
+curl -sL https://deb.nodesource.com/setup_6.x | bash -
+apt-get install -y nodejs
 
 echo "Setting up application directory..."
 mkdir -p /var/www/${application_name}
