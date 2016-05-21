@@ -7,16 +7,16 @@ variable "public_key" {
   description = "The public key for the user"
 }
 
-resource "aws_iam_group" "deployers" {
+resource "aws_iam_group" "deploy" {
   name = "deployers"
 }
 
-resource "aws_iam_group_membership" "deployers" {
+resource "aws_iam_group_membership" "deploy" {
   name = "deployers-membership"
   users = [
     "${aws_iam_user.admin.name}",
   ]
-  group = "${aws_iam_group.deployers.name}"
+  group = "${aws_iam_group.deploy.name}"
 }
 
 resource "aws_iam_user" "admin" {
@@ -27,4 +27,8 @@ resource "aws_iam_user_ssh_key" "admin" {
   username = "${aws_iam_user.admin.name}"
   encoding = "PEM"
   public_key = "${var.public_key}"
+}
+
+output "deploy_group_name" {
+  value = "${aws_iam_group.deploy.name}"
 }

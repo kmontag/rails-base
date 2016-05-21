@@ -10,6 +10,10 @@ variable "public_key" {
   description = "Your PEM public key for SSH access to the application"
 }
 
+variable "db_password" {
+  description = "Password for the created DB"
+}
+
 variable "name" {
   description = "The name of the application"
   default     = "rails_base"
@@ -57,17 +61,24 @@ module "db" {
 
   name       = "${var.name}_production"
   username   = "${var.name}"
+  password   = "${var.db_password}"
 
   # DB subnet groups need at least two subnets
   subnet_ids = "${module.public_subnets.subnet_ids}"
 }
 
 module "application" {
-  source    = "./application"
-  region    = "${var.region}"
-  vpc_id    = "${module.vpc.vpc_id}"
-  vpc_cidr  = "${module.vpc.vpc_cidr}"
-  subnet_id = "${element(split(",", module.public_subnets.subnet_ids), 0)}"
+  source            = "./application"
+  region            = "${var.region}"
+  vpc_id            = "${module.vpc.vpc_id}"
+  vpc_cidr          = "${module.vpc.vpc_cidr}"
+  subnet_id         = "${element(split(",", module.public_subnets.subnet_ids), 0)}"
+
+  deploy_group_name = "${module.users.deploy_group_name}"
+  db_username       = "${module.db.username}"
+  db_host           = "${module.db.host}"
+  db_password       = "${module.db.password}"
+  application_name  = "${var.name}"
 }
 
 module "users" {
@@ -81,4 +92,8 @@ output "ssh_host" {
 
 output "web_host" {
   value = "${module.application.elb_dns_name}"
+}
+
+output "name" {
+  value = "${var.name}"
 }

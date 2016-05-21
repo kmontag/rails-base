@@ -45,6 +45,7 @@ gem 'webpack-rails'
 
 group :deployment do
   # Use Capistrano for deployment
+  gem 'capistrano3-puma'
   gem 'capistrano-rails'
   gem 'capistrano-rvm'
 end

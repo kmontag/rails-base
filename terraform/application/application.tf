@@ -1,10 +1,28 @@
-variable "vpc_id"   { }
-variable "vpc_cidr" { }
-variable "region"   { }
+variable "vpc_id"      { }
+variable "vpc_cidr"    { }
+variable "region"      { }
+
+variable "db_username" { }
+variable "db_password" { }
+variable "db_host"     { }
+
+variable "deploy_group_name" {
+  description = "The IAM group which should be allowed to SSH into the instances"
+}
+
+variable "application_name" {
+  description = "The name used by Capistrano when deploying the application"
+}
 
 variable "subnet_id" {
   description = "The public-facing subnet where we should launch all resources"
 }
+
+variable "username" {
+  description = "The username on the instance which deployers will log in as"
+  default = "deploy"
+}
+
 
 variable "amis" {
   type        = "map"
@@ -30,8 +48,8 @@ resource "aws_security_group" "application" {
   # Web access on the Rails server port from within the network
   ingress {
     protocol    = "tcp"
-    from_port   = 3000
-    to_port     = 3000
+    from_port   = 9292
+    to_port     = 9292
     cidr_blocks = ["${var.vpc_cidr}"]
   }
 
@@ -88,6 +106,23 @@ resource "aws_iam_role_policy" "access_public_keys" {
 EOF
 }
 
+resource "template_file" "init" {
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  template = "${file("${path.module}/init.sh.tpl")}"
+
+  vars = {
+    username          = "${var.username}"
+    deploy_group_name = "${var.deploy_group_name}"
+    db_username       = "${var.db_username}"
+    db_password       = "${var.db_password}"
+    db_host           = "${var.db_host}"
+    application_name  = "${var.application_name}"
+  }
+}
+
 # Uncomment this and key_name below to debug the IAM-based
 # SSH access.
 # resource "aws_key_pair" "debug" {
@@ -110,7 +145,7 @@ resource "aws_instance" "application" {
   ami = "${lookup(var.amis, var.region)}"
   instance_type = "t2.micro"
 
-  user_data = "${file("${path.module}/init.sh")}"
+  user_data = "${template_file.init.rendered}"
 }
 
 resource "aws_security_group" "elb" {
@@ -131,7 +166,7 @@ resource "aws_elb" "default" {
   instances       = ["${aws_instance.application.id}"]
 
   listener {
-    instance_port     = 3000
+    instance_port     = 9292
     instance_protocol = "http"
     lb_port           = 80
     lb_protocol       = "http"

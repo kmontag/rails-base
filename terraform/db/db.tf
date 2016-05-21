@@ -9,6 +9,10 @@ variable "username" {
   description = "The username to access the database"
 }
 
+variable "password" {
+  description = "The password to access the database"
+}
+
 variable "subnet_ids" {
   description = "The subnet ID where we should launch the DB"
 }
@@ -39,7 +43,19 @@ resource "aws_db_instance" "default" {
   name                   = "${var.name}"
 
   username               = "${var.username}"
-  password               = "change_in_a_real_application"
+  password               = "${var.password}"
 
   publicly_accessible    = false
+}
+
+output "username" {
+  value = "${aws_db_instance.default.username}"
+}
+
+output "password" {
+  value = "${var.password}"
+}
+
+output "host" {
+  value = "${aws_db_instance.default.endpoint}"
 }

@@ -27,4 +27,4 @@ To SSH:
 
 To view:
 
-    open https://$(cd terraform && terraform output web_host)
+    open http://$(cd terraform && terraform output web_host)

@@ -8,7 +8,7 @@ app:
   volumes:
     - .:/app
   environment:
-    DATABASE_USER: user
+    DATABASE_USERNAME: user
     DATABASE_PASSWORD: password
     DATABASE_HOST: db
     # TODO: this goes in as tcp://host:port, extract the actual host in an entrypoint
