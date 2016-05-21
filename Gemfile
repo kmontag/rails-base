@@ -12,6 +12,9 @@ gem 'bcrypt', '~> 3.1.7'
 # Authentication
 gem 'devise'
 
+# Default environment variable config
+gem 'dotenv-rails'
+
 # Incoming emails
 gem 'griddler'
 gem 'griddler-sendgrid'
@@ -22,6 +25,9 @@ gem 'haml-rails', '~> 0.9'
 # Postgres
 gem 'pg'
 
+# Web server
+gem 'puma'
+
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.2.0'
 
@@ -31,23 +37,18 @@ gem 'sassc-rails'
 # Use Uglifier as compressor for JavaScript assets
 gem 'uglifier', '>= 1.3.0'
 
-# See https://github.com/sstephenson/execjs#readme for more supported runtimes
-# gem 'therubyracer', platforms: :ruby
-
-# Use Unicorn as the app server
-# gem 'unicorn'
-
-# Use Capistrano for deployment
-# gem 'capistrano-rails', group: :development
-
+# Loader for Javascripts
 gem 'webpack-rails'
+
+group :deployment do
+  # Use Capistrano for deployment
+  gem 'capistrano-rails'
+  gem 'capistrano-rvm'
+end
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug'
-
-  # Default environment variable config
-  gem 'dotenv-rails'
 
   # Access an IRB console on exception pages or by using <%= console %> in views
   gem 'web-console', '~> 2.0'

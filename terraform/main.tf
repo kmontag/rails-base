@@ -75,10 +75,10 @@ module "users" {
   public_key = "${var.public_key}"
 }
 
-output "ssh_dns" {
+output "ssh_host" {
   value = "${module.application.instance_public_dns}"
 }
 
-output "web_dns" {
+output "web_host" {
   value = "${module.application.elb_dns_name}"
 }

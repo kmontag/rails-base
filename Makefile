@@ -72,7 +72,7 @@ sh-js: tmp/docker-build
 
 .PHONY: logs
 logs:
-	docker-compose logs app
+	docker-compose logs -f app
 
 .PHONY: ps
 ps:

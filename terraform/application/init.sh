@@ -5,7 +5,7 @@ echo "APPLICATION SETUP"
 echo
 
 echo "Installing security updates..."
-unattended-upgrades # Install security updates
+unattended-upgrade # Install security updates
 
 echo "Installing AWS CLI"
 apt-get install -y awscli
@@ -13,22 +13,8 @@ apt-get install -y awscli
 # Allow SSH access from the Deployers group.
 # Adapted from https://cloudonaut.io/manage-aws-ec2-ssh-access-with-iam/
 echo "Setting up scripts for SSH config..."
-(
-cat <<'IMPORT_USERS'
-#!/bin/bash
-aws iam list-users --query "Users[].[UserName]" --output text | while read User; do
-  if id -u "$User" >/dev/null 2>&1; then
-    echo "$User exists"
-  else
-    /usr/sbin/adduser "$User"
-    echo "$User ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/$User"
-  fi
-done
-IMPORT_USERS
-) > /opt/import_users.sh
-chmod +x /opt/import_users.sh
-
-echo "*/10 * * * * root /opt/import_users.sh" > /etc/cron.d/import_users # Check for new users every 10 minutes
+/usr/sbin/adduser deploy
+echo "deploy ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/deploy
 
 (
 cat <<'AUTHORIZED_KEYS_COMMAND'
@@ -37,8 +23,12 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-aws iam list-ssh-public-keys --user-name "$1" --query "SSHPublicKeys[?Status == 'Active'].[SSHPublicKeyId]" --output text | while read KeyId; do
-  aws iam get-ssh-public-key --user-name "$1" --ssh-public-key-id "$KeyId" --encoding SSH --query "SSHPublicKey.SSHPublicKeyBody" --output text
+# Prints the active public keys for all users in the deployers group
+aws iam get-group --group-name deployers --query "Users[].UserName" --output text | while read User; do
+
+  aws iam list-ssh-public-keys --user-name "$User" --query "SSHPublicKeys[?Status == 'Active'].[SSHPublicKeyId]" --output text | while read KeyId; do
+    aws iam get-ssh-public-key --user-name "$User" --ssh-public-key-id "$KeyId" --encoding SSH --query "SSHPublicKey.SSHPublicKeyBody" --output text | sed "s/\$/ $User/"
+  done
 done
 AUTHORIZED_KEYS_COMMAND
 ) > /opt/authorized_keys_command.sh
@@ -49,5 +39,17 @@ echo "AuthorizedKeysCommand /opt/authorized_keys_command.sh" >> /etc/ssh/sshd_co
 echo "AuthorizedKeysCommandUser nobody" >> /etc/ssh/sshd_config
 service ssh restart
 
-echo "Importing users..."
-/opt/import_users.sh # Run once immediately
+echo "Installing Ruby..."
+echo "gem: --no-ri --no-rdoc" > ~deploy/.gemrc
+sudo -u deploy -H sh -c "gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3"
+sudo -u deploy -H sh -c "\\curl -sSL https://get.rvm.io | bash -s stable --ruby=2.3.0"
+sudo -u deploy -H sh -c "~/.rvm/bin/rvm default do gem install bundler"
+
+echo "Installing other dependencies..."
+
+# For postgres
+apt-get install -y postgresql-client libpq-dev
+
+echo "Setting up application directory..."
+mkdir -p /var/www
+chown deploy:deploy /var/www
