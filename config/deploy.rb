@@ -1,8 +1,14 @@
 # config valid only for current version of Capistrano
-lock '3.5.0'
+# lock '3.8.2'
 
-set :application, `cd #{Pathname.new(__dir__).join '..', 'terraform'} && terraform output name`.strip
-set :repo_url, 'https://github.com/kmontag/rails-base'
+set :application, raise('must set application name (use the same name as terraform)')
+set :repo_url, raise('must set repo URL')
+
+# Don't need to pull in deployment gems in prod.
+set :bundle_without, %w(development test deployment).join(' ')
+
+# Need development modules as well.
+set :npm_flags, '--silent --no-progress'
 
 # Default branch is :master
 # ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
@@ -40,6 +46,12 @@ set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids', 'tmp/cache', '
 set :puma_init_active_record, true
 
 namespace :deploy do
+
+  after :updated, :webpack_precompile do
+    on roles(:web) do
+      execute "cd '#{release_path}' && NODE_ENV=production node_modules/.bin/webpack"
+    end
+  end
 
   after :restart, :clear_cache do
     on roles(:web), in: :groups, limit: 3, wait: 10 do

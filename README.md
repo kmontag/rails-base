@@ -1,3 +1,13 @@
+** rails-base
+
+To initialize:
+
+* Remove distribution lines from `.gitignore`
+
+    make deps
+    ./rails new -d postgresql [options] .
+    ./rake db:migrate
+
 To start the server:
 
     make up
@@ -7,24 +17,27 @@ To run standard Rails/Rake commands:
     ./rake db:migrate
     ./rails generate migration AddFooToBars
     
-To see all available commands:
+To set up infrastructure:
 
-    make help
+* Add AWS credentials to `terraform/credentials`
+* Copy deploy key to `terraform/deploy.id_rsa`
+* Customize infrastructure variables in `terraform/terraform.tfvars`
 
-To deploy infrastructure:
-
-    cd terraform
-    terraform plan
+    cd terraform/
+    terraform get
     terraform apply
+        
+To deploy:
 
-To deploy the application:
+* Create a user in the `deployers` group on IAM and add your public
+  key
+* Set application name and repo variables in `config/deploy.rb`
 
-    cap production deploy
-
-To SSH:
-
-    ssh deploy@$(cd terraform && terraform output ssh_host)
-
-To view:
-
-    open http://$(cd terraform && terraform output web_host)
+    ssh-add /path/to/iam/key
+    bundle install --gemfile=Gemfile.deploy
+    BUNDLE_GEMFILE=Gemfile.deploy bundle exec cap production deploy
+    
+To log in to the server:
+    
+    ssh-add /path/to/iam/key
+    ssh deploy@$(cd terraform ; terraform output instance_address)

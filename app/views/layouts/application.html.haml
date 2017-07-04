@@ -1,10 +1,15 @@
 !!!
 %html
   %head
-    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
-    %title Title needed
-    = stylesheet_link_tag    'application', media: 'all'
+    %title it works
     = csrf_meta_tags
-  = view({}, tag_name: :body) do
+
+    -# CSS is served as JS in dev, for hot reloading
+    - if !Rails.env.production?
+      = javascript_include_tag *webpack_asset_paths('style', extension: 'js')
+    = stylesheet_link_tag *webpack_asset_paths('style', extension: 'css')
+
+    = javascript_include_tag *webpack_asset_paths('application', extension: 'js'), async: true
+
+  %body
     = yield
-    = javascript_include_tag *webpack_asset_paths('application')

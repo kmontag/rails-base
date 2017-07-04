@@ -4,15 +4,14 @@ default: help
 #!
 #! Launching the application:
 up:        ## Launch the app with debug access
-debug:     ## Launch the app in the background
+bg:        ## Launch the app in the background
 stop:      ## Shut down the app
 
 #!
 #! Common tasks:
 test:      ## Run tests
 console:   ## Launch a Rails console
-sh:        ## Run Bash in the app container
-sh-js:     ## Run Bash in the JS container
+sh:        ## Run Bash
 bundle:    ## Install gems
 
 #!
@@ -34,25 +33,25 @@ deps: tmp/docker-build vendor/bundle node_modules
 bundle: tmp/docker-build
 	docker-compose run --no-deps --rm app bundle install
 	docker-compose run --no-deps --rm app bundle clean
-	touch vendor/bundle/
+	touch vendor/bundle
 
 .PHONY: npm
 npm: tmp/docker-build
-	docker-compose run --no-deps --rm js npm install
-	touch node_modules/
+	docker-compose run --rm webpack npm prune
+	docker-compose run --rm webpack npm install
+	touch node_modules
 
 .PHONY: up
 up: stop deps
-	docker-compose up -d app js
+	docker-compose up app webpack
 
-.PHONY: debug
-debug: stop deps
-	docker-compose up -d js
-	docker-compose up app
+.PHONY: bg
+bg: stop deps
+	docker-compose up -d app webpack
 
 .PHONY: stop
 stop:
-	docker-compose stop app db js
+	docker-compose stop app db
 
 .PHONY: console
 console: deps
@@ -64,27 +63,22 @@ test: deps
 
 .PHONY: sh
 sh: tmp/docker-build
-	docker-compose run --rm app /bin/bash
-
-.PHONY: sh-js
-sh-js: tmp/docker-build
-	docker-compose run --rm js /bin/bash
+	docker-compose run --rm app /bin/sh
 
 .PHONY: logs
 logs:
-	docker-compose logs -f app
+	docker-compose logs app
 
 .PHONY: ps
 ps:
 	docker-compose ps
 
 # Physical files and directories
-vendor/bundle: tmp/docker-build docker/app/Dockerfile $(wildcard Gemfile*)
+node_modules: tmp/docker-build $(wildcard docker/webpack/*)
+	$(MAKE) npm
+vendor/bundle: tmp/docker-build $(wildcard docker/app/*) $(wildcard Gemfile*)
 	$(MAKE) bundle
 
-node_modules: tmp/docker-build docker/js/Dockerfile package.json
-	$(MAKE) npm
-
-tmp/docker-build: docker-compose.yml $(wildcard docker/*/*)
-	docker-compose build app db js
+tmp/docker-build: docker-compose.yml $(wildcard docker/**/*)
+	docker-compose build app db webpack
 	touch tmp/docker-build

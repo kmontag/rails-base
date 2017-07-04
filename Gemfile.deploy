@@ -1,0 +1,12 @@
+# Deploying doesn't require the full application to be installed. We
+# factor it out to allow e.g. a local machine to deploy without
+# installing all gems.
+source 'https://rubygems.org'
+
+gem 'capistrano', '~> 3.0'
+
+gem 'capistrano-locally'
+gem 'capistrano-npm'
+gem 'capistrano3-puma'
+gem 'capistrano-rails'
+gem 'capistrano-rvm'
