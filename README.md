@@ -58,5 +58,5 @@ ssh deploy@$(cd terraform ; terraform output instance_address)
 To open in browser:
 
 ```bash
-open $(cd terraform ; terraform output web_address)
+open http://$(cd terraform ; terraform output web_address)
 ```
