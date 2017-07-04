@@ -1,99 +1,86 @@
-variable "access_key" {
-  description = "Your AWS access key"
-}
-
-variable "secret_key" {
-  description = "Your AWS secret key"
-}
-
-variable "public_key" {
-  description = "Your PEM public key for SSH access to the application"
-}
-
-variable "db_password" {
-  description = "Password for the created DB"
-}
-
-variable "name" {
-  description = "The name of the application"
-  default     = "rails_base"
-}
-
-variable "cidr" {
-  description = "The CIDR block for the entire VPC"
-  default     = "10.66.0.0/16"
-}
-
-variable "region" {
-  description = "The AWS region to launch resources"
-  default     = "us-east-1" # Currently ACM is only supported in us-east-1
-}
-
+# Specify the provider and access details
 provider "aws" {
-  access_key = "${var.access_key}"
-  secret_key = "${var.secret_key}"
-  region     = "${var.region}"
+  region = "${var.aws_region}"
+  shared_credentials_file = "${path.root}/credentials"
 }
 
-# The VPC containing all other resources
-module "vpc" {
-  source = "github.com/hashicorp/best-practices//terraform/modules/aws/network/vpc"
-  name   = "${var.name}"
-  cidr   = "${var.cidr}"
+# Create a VPC to launch our instances into
+resource "aws_vpc" "default" {
+  cidr_block = "${var.cidr_block}"
+
+  tags {
+    Name = "${var.application_name}"
+  }
 }
 
-# Two public-facing subnets, one for web- and SSH-accessible resources, and one for
-# internal resources. In a real-world application we'd have the internal resources on
-# a private subnet, but that would require a NAT gateway, which would take us out of
-# the free tier.
-module "public_subnets" {
-  source = "github.com/hashicorp/best-practices//terraform/modules/aws/network/public_subnet"
-  vpc_id = "${module.vpc.vpc_id}"
-  cidrs  = "${cidrsubnet(var.cidr, 8, 2)},${cidrsubnet(var.cidr, 8, 3)}"
-  azs    = "${var.region}a,${var.region}b"
+# Create an internet gateway to give our subnet access to the outside world
+resource "aws_internet_gateway" "default" {
+  vpc_id = "${aws_vpc.default.id}"
 }
 
-module "db" {
-  source     = "./db"
-
-  vpc_id     = "${module.vpc.vpc_id}"
-  vpc_cidr   = "${module.vpc.vpc_cidr}"
-
-  name       = "production"
-  username   = "${var.name}"
-  password   = "${var.db_password}"
-
-  # DB subnet groups need at least two subnets
-  subnet_ids = "${module.public_subnets.subnet_ids}"
+# Grant the VPC internet access on its main route table
+resource "aws_route" "internet_access" {
+  route_table_id         = "${aws_vpc.default.main_route_table_id}"
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = "${aws_internet_gateway.default.id}"
 }
 
+# Create a group to grant deploy access
+resource "aws_iam_group" "deployers" {
+  name = "${var.deployers_iam_group_name}"
+}
+
+# Create two subnets in different availability zones, to be used for
+# our DB subnet group.
+resource "aws_subnet" "database" {
+  vpc_id            = "${aws_vpc.default.id}"
+  cidr_block        = "${cidrsubnet(aws_vpc.default.cidr_block, 8, count.index + 1)}"
+  availability_zone = "${var.aws_region}${element(split(",", "a,b"), count.index)}"
+  count             = 2
+}
+
+# Launch a database
+module "database" {
+  source = "./database"
+
+  vpc_id = "${aws_vpc.default.id}"
+  vpc_cidr = "${aws_vpc.default.cidr_block}"
+
+  name = "${var.database_name}"
+  username = "${var.database_username}"
+  password = "${var.database_password}"
+
+  subnet_ids = "${aws_subnet.database.*.id}"
+}
+
+# Create a subnet to launch our instances into
+resource "aws_subnet" "application" {
+  vpc_id                  = "${aws_vpc.default.id}"
+  cidr_block              = "${cidrsubnet(aws_vpc.default.cidr_block, 8, 0)}"
+  map_public_ip_on_launch = true
+}
+
+# Launch the application
 module "application" {
-  source            = "./application"
-  region            = "${var.region}"
-  vpc_id            = "${module.vpc.vpc_id}"
-  vpc_cidr          = "${module.vpc.vpc_cidr}"
-  subnet_id         = "${element(split(",", module.public_subnets.subnet_ids), 0)}"
+  source = "./application"
 
-  deploy_group_name = "${module.users.deploy_group_name}"
-  db_username       = "${module.db.username}"
-  db_host           = "${element(split(":", module.db.host), 0)}" # Remove the port number
-  db_password       = "${module.db.password}"
-  application_name  = "${var.name}"
-}
+  region    = "${var.aws_region}"
+  vpc_id    = "${aws_vpc.default.id}"
+  vpc_cidr  = "${aws_vpc.default.cidr_block}"
+  subnet_id = "${aws_subnet.application.id}"
 
-module "users" {
-  source = "./users"
-  public_key = "${var.public_key}"
-}
+  bundler_version = "${file("${path.root}/../docker/app/bundler-version")}"
+  ruby_version    = "${file("${path.root}/../docker/app/ruby-version")}"
+  npm_version     = "${file("${path.root}/../docker/webpack/npm-version")}"
 
-output "ssh_host" {
-  value = "${module.application.instance_public_dns}"
-}
+  database_name     = "${var.database_name}"
+  database_username = "${var.database_username}"
+  database_password = "${var.database_password}"
+  database_host     = "${element(split(":", module.database.host), 0)}" # Remove the port number
 
-output "web_host" {
-  value = "${module.application.elb_dns_name}"
-}
-
-output "name" {
-  value = "${var.name}"
+  # TODO: Store this in vault or somewhere more secure
+  deploy_key = "${file("${path.root}/deploy.id_rsa")}"
+  repo_url   = "${var.repo_url}"
+  deployers_iam_group_name = "${var.deployers_iam_group_name}"
+  application_name         = "${var.application_name}"
 }

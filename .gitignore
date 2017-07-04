@@ -1,23 +1,79 @@
-# Installed gems.
+# Gems and bundler config.
+/.bundle
 /vendor/bundle
 
-# Compiled assets.
-/public/assets
+# Node stuff.
+/node_modules
 
-# Ignore all logfiles and tempfiles.
+# Terraform.
+/terraform/.terraform/
+/terraform/.terraform.tfstate.lock.info
+/terraform/terraform.tfstate.backup
+
+/terraform/credentials
+/terraform/deploy.id_rsa
+
+# Logfiles and tempfiles.
 /log/*
-!/log/.keep
 /tmp/*
+!/log/.keep
 !/tmp/.keep
 
-# Webpack artifacts
-/node_modules
-/public/webpack
+/.byebug_history
 
-# Terraform config
+# Stuff that you shouldn't ignore in an actual application, but that
+# we don't want to include in this distribution.
+/Gemfile.lock
+/Gemfile.deploy.lock
+/package-lock.json
 /terraform/terraform.tfvars
-/terraform/.terraform
-
-# In general, remove these rules for an actual application
 /terraform/terraform.tfstate
-/terraform/terraform.tfstate.backup
+
+/Rakefile
+
+/app/*
+
+!/app/assets
+/app/assets/*
+!/app/assets/javascripts
+/app/assets/javascripts/*
+!/app/assets/javascripts/application.js
+
+!/app/assets/stylesheets
+/app/assets/stylesheets/*
+!/app/assets/stylesheets/application.css
+
+!/app/controllers
+/app/controllers/*
+!/app/controllers/index_controller.rb
+
+!/app/models
+/app/models/*
+!/app/models/view.rb
+
+!/app/views
+/app/views/*
+!/app/views/layouts
+/app/views/layouts/*
+!/app/views/layouts/application.html.haml
+!/app/views/index
+
+/bin
+/config.ru
+/config/*
+!/config/database.yml
+!/config/deploy.rb
+!/config/deploy/
+!/config/initializers
+/config/initializers/*
+!/config/initializers/webpack_rails.rb
+!/config/routes.rb
+
+/db/*
+!/db/migrate
+/lib
+/public
+/test
+/vendor
+
+/log/.keep

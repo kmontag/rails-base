@@ -1,2 +1,2 @@
 #!/bin/bash
-docker-compose run --rm app bin/rake "$@"
+docker-compose run --rm app bundle exec rake "$@"

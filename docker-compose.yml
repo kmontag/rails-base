@@ -4,26 +4,26 @@ app:
     - 3000:3000
   links:
     - db
-    - js
+    - webpack
   volumes:
-    - .:/app
-  environment:
-    DATABASE_USERNAME: user
-    DATABASE_PASSWORD: password
-    DATABASE_HOST: db
-    # TODO: this goes in as tcp://host:port, extract the actual host in an entrypoint
-    WEBPACK_DEV_SERVER_HOST: ${DOCKER_HOST}
-    WEBPACK_DEV_SERVER_PORT: 3808
+    - .:/app:cached
 
-js:
-  build: docker/js
-  volumes:
-    - .:/app
+webpack:
+  build: docker/webpack
   ports:
-    - 3808:3808
+    - ${WEBPACK_DEV_SERVER_PORT}:${WEBPACK_DEV_SERVER_PORT}
+  volumes:
+    - .:/app:cached
 
 db:
   image: postgres:9.4
+  volumes_from:
+    - dbdata
   environment:
-    POSTGRES_USER: user
-    POSTGRES_PASSWORD: password
+    POSTGRES_DB: ${DATABASE_NAME}
+    POSTGRES_USER: ${DATABASE_USERNAME}
+    POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+
+dbdata:
+  image: postgres:9.4
+  entrypoint: "true"
